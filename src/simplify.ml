@@ -248,7 +248,7 @@ let build_app_infer (env : Environ.env) (evd : Evd.evar_map ref) ((ctx, ty) : go
       let targs = Array.of_list (CList.map (Option.default c) args) in
         EConstr.mkApp (tf, targs) end
 
-let conv_fun = Evarconv.evar_conv_x Names.full_transparent_state
+let unif_flags = Evarconv.default_flags_of Names.full_transparent_state
 let is_conv (env : Environ.env) (sigma : Evd.evar_map) (ctx : rel_context)
   (t1 : EConstr.t) (t2 : EConstr.t) : bool =
   let env = push_rel_context ctx env in
@@ -273,7 +273,7 @@ let compose_term (env : Environ.env) (evd : Evd.evar_map ref)
       (* Finally, substitute the rels in [c2] to get a valid term for [ev1]. *)
       let c2 = Vars.substl subst_ctx1 c2 in
       evd := Evd.define ev1 c2 !evd;
-      evd := Evarsolve.check_evar_instance !evd ev1 c2 conv_fun;
+      evd := Evarsolve.check_evar_instance Evarconv.(conv_fun evar_conv_x) unif_flags !evd ev1 c2;
       h2, c1
   | None -> assert false
 
